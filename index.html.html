@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บัลลังก์แห่งเงาจันทร์ - Deep DnD HTML Game</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html {
+      width: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
+      background: #090713;
+      overflow-x: hidden;
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #282452, #090713 70%);
+      color: #f5f2ff;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body.fullscreenMode {
+      background: #090713;
+    }
+
+    .app {
+      max-width: 1220px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    }
+
+    .appShell {
+      min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title { text-align: center; margin-bottom: 20px; }
+
+    .title h1 {
+      margin: 0;
+      font-size: 38px;
+      color: #d9c7ff;
+      text-shadow: 0 0 16px rgba(164, 113, 255, 0.7);
+    }
+
+    .title p { color: #bfb7d9; margin-top: 8px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      background: rgba(15, 13, 35, 0.93);
+      border: 1px solid rgba(183, 148, 255, 0.25);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel h2, .panel h3 { margin-top: 0; color: #e7dbff; }
+
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      color: #cbc2ea;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(216, 196, 255, 0.25);
+      background: #151229;
+      color: #fff;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: #a678ff; }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      background: linear-gradient(135deg, #7c4dff, #b84dff);
+      color: white;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: transform 0.12s, opacity 0.12s;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button:hover { transform: translateY(-1px); opacity: 0.94; }
+    button.secondary { background: #27213f; border: 1px solid rgba(205, 178, 255, 0.25); }
+    button.danger { background: linear-gradient(135deg, #a8263e, #e05050); }
+    button.green { background: linear-gradient(135deg, #239c71, #55d69d); }
+    .full { width: 100%; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .barWrap { margin-top: 10px; }
+    .barLabel {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #d8d0ef;
+      margin-bottom: 4px;
+    }
+
+    .bar {
+      height: 12px;
+      background: #221d39;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .barFill {
+      height: 100%;
+      width: 50%;
+      background: linear-gradient(90deg, #62e6a4, #7c4dff);
+    }
+
+    .storyBox {
+      min-height: 410px;
+      line-height: 1.72;
+      font-size: 17px;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    .choices { display: grid; gap: 10px; margin-top: 16px; }
+
+    .choiceBtn {
+      text-align: left;
+      background: rgba(124, 77, 255, 0.22);
+      border: 1px solid rgba(188, 151, 255, 0.3);
+      font-size: 15px;
+    }
+
+    .log {
+      max-height: 210px;
+      overflow-y: auto;
+      font-size: 13px;
+      color: #c8c0dd;
+      background: rgba(0,0,0,0.25);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(166, 120, 255, 0.18);
+      border: 1px solid rgba(166, 120, 255, 0.28);
+      margin: 3px 3px 3px 0;
+      font-size: 12px;
+    }
+
+    .enemyCard {
+      border: 1px solid rgba(255, 96, 96, 0.35);
+      background: rgba(90, 16, 28, 0.22);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .allyCard {
+      border: 1px solid rgba(98, 230, 164, 0.25);
+      background: rgba(28, 92, 72, 0.18);
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .hidden { display: none; }
+    .small { color: #ada4c7; font-size: 13px; }
+    .muted { color: #9f96b8; }
+
+    .audioControls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .volumeRow {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #cfc6ea;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: #a678ff;
+    }
+
+    .fxLayer {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .screenFlash {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 998;
+      opacity: 0;
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .flashLight { animation: flashLight 0.45s ease-out; }
+    .flashDark { animation: flashDark 0.55s ease-out; }
+    .flashDamage { animation: flashDamage 0.35s ease-out; }
+
+    @keyframes flashLight {
+      0% { opacity: 0; background: rgba(255,255,255,0.0); }
+      20% { opacity: 1; background: rgba(210, 190, 255, 0.35); }
+      100% { opacity: 0; background: rgba(255,255,255,0.0); }
+    }
+
+    @keyframes flashDark {
+      0% { opacity: 0; background: rgba(0,0,0,0.0); }
+      25% { opacity: 1; background: rgba(80, 0, 120, 0.38); }
+      100% { opacity: 0; background: rgba(0,0,0,0.0); }
+    }
+
+    @keyframes flashDamage {
+      0% { opacity: 0; background: rgba(255,0,40,0.0); }
+      20% { opacity: 1; background: rgba(255,0,40,0.28); }
+      100% { opacity: 0; background: rgba(255,0,40,0.0); }
+    }
+
+    .shake { animation: shake 0.28s ease-in-out; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .enemyHit { animation: enemyHit 0.28s ease-out; }
+    @keyframes enemyHit {
+      0% { transform: scale(1); filter: brightness(1); }
+      35% { transform: scale(1.035); filter: brightness(2); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    .floatText {
+      position: fixed;
+      z-index: 1001;
+      font-weight: bold;
+      font-size: 22px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      animation: floatUp 1s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(10px) scale(0.85); }
+      15% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.15); }
+    }
+
+    .particle {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      z-index: 1000;
+      pointer-events: none;
+      animation: particleBurst 0.85s ease-out forwards;
+      box-shadow: 0 0 14px currentColor;
+    }
+
+    @keyframes particleBurst {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.15); }
+    }
+
+    .pulseGlow { animation: pulseGlow 0.9s ease-out; }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 rgba(166, 120, 255, 0); }
+      35% { box-shadow: 0 0 36px rgba(166, 120, 255, 0.65); }
+      100% { box-shadow: 0 0 0 rgba(166, 120, 255, 0); }
+    }
+
+    .choiceBtn:hover {
+      box-shadow: 0 0 18px rgba(166, 120, 255, 0.25);
+    }
+
+    .menuScreen,
+    .introScreen,
+    .settingsOverlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      min-height: 100vh;
+      min-height: 100dvh;
+      z-index: 1200;
+      background: radial-gradient(circle at top, rgba(55, 43, 105, 0.98), rgba(7, 6, 18, 0.98) 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    }
+
+    .menuCard,
+    .introCard,
+    .settingsCard {
+      width: min(720px, 100%);
+      background: rgba(15, 13, 35, 0.96);
+      border: 1px solid rgba(203, 171, 255, 0.35);
+      border-radius: 26px;
+      padding: 28px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+      text-align: center;
+    }
+
+    .menuLogo {
+      font-size: 46px;
+      margin: 0;
+      color: #eee4ff;
+      text-shadow: 0 0 22px rgba(166, 120, 255, 0.9);
+    }
+
+    .menuSubtitle {
+      color: #bfb7d9;
+      margin: 10px 0 22px;
+      line-height: 1.6;
+    }
+
+    .menuButtons {
+      display: grid;
+      gap: 12px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .menuFooter {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #9188aa;
+    }
+
+    .introText {
+      text-align: left;
+      white-space: pre-line;
+      line-height: 1.8;
+      color: #eee8ff;
+      background: rgba(255,255,255,0.055);
+      border-radius: 18px;
+      padding: 18px;
+      min-height: 220px;
+    }
+
+    .settingsGrid {
+      display: grid;
+      gap: 14px;
+      text-align: left;
+      margin-top: 18px;
+    }
+
+    .settingLine {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,0.055);
+      padding: 12px;
+      border-radius: 14px;
+    }
+
+    .topBar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .mobileBottomNav {
+      display: none;
+    }
+
+    .installHint {
+      font-size: 12px;
+      color: #9f96b8;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      html,
+      body {
+        width: 100%;
+        min-height: 100dvh;
+      }
+
+      .app {
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) calc(78px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      }
+
+      .appShell {
+        min-height: calc(100dvh - 88px - env(safe-area-inset-bottom));
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .title h1 {
+        font-size: clamp(22px, 7vw, 30px);
+        line-height: 1.15;
+      }
+
+      .title p {
+        font-size: 13px;
+        margin-bottom: 0;
+      }
+
+      .panel {
+        padding: 13px;
+        border-radius: 16px;
+        width: 100%;
+      }
+
+      .storyBox {
+        min-height: 260px;
+        max-height: none;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .choices {
+        gap: 8px;
+      }
+
+      .choiceBtn,
+      button {
+        width: 100%;
+        min-height: 46px;
+        font-size: 14px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+      }
+
+      .stat {
+        padding: 9px;
+        font-size: 13px;
+      }
+
+      .topBar {
+        display: none;
+      }
+
+      .mobileBottomNav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 7px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1100;
+        padding: 8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+        background: rgba(9, 7, 19, 0.92);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(203, 171, 255, 0.22);
+      }
+
+      .mobileBottomNav button {
+        margin: 0;
+        min-height: 42px;
+        padding: 8px 4px;
+        font-size: 12px;
+        border-radius: 12px;
+      }
+
+      .audioControls {
+        grid-template-columns: 1fr;
+      }
+
+      .settingLine {
+        grid-template-columns: 1fr;
+      }
+
+      .menuScreen,
+      .introScreen,
+      .settingsOverlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      }
+
+      .menuCard,
+      .introCard,
+      .settingsCard {
+        margin-top: 18px;
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .menuLogo {
+        font-size: 32px;
+        line-height: 1.15;
+      }
+
+      .menuSubtitle {
+        font-size: 14px;
+      }
+
+      .introText {
+        min-height: 180px;
+        max-height: 48dvh;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .log {
+        max-height: 150px;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .menuScreen.hidden,
+    .introScreen.hidden,
+    .settingsOverlay.hidden,
+    .app.hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) calc(74px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      }
+
+      .title {
+        margin-bottom: 12px;
+      }
+
+      .title h1 {
+        font-size: 24px;
+      }
+
+      .title p {
+        font-size: 12px;
+      }
+
+      .panel h2 {
+        font-size: 19px;
+      }
+
+      .panel h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .barWrap {
+        margin-top: 8px;
+      }
+
+      .storyBox {
+        min-height: 240px;
+        font-size: 14px;
+      }
+
+      .choiceBtn {
+        font-size: 13px;
+        line-height: 1.45;
+        padding: 12px;
+      }
+
+      input,
+      select {
+        font-size: 16px;
+      }
+
+      .mobileBottomNav {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .mobileBottomNav button {
+        font-size: 11px;
+      }
+
+      .menuLogo {
+        font-size: 28px;
+      }
+
+      .menuButtons {
+        max-width: 100%;
+      }
+
+      .menuCard,
+      .introCard,
+      .settingsCard {
+        padding: 16px;
+      }
+
+      .floatText {
+        font-size: 18px;
+        left: 50% !important;
+        transform: translateX(-50%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="fxLayer" class="fxLayer"></div>
+  <div id="screenFlash" class="screenFlash"></div>
+
+  <section id="mainMenu" class="menuScreen">
+    <div class="menuCard">
+      <h1 class="menuLogo">บัลลังก์แห่งเงาจันทร์</h1>
+      <p class="menuSubtitle">Deep DnD HTML Game<br>สร้างตัวละคร หาเพื่อนร่วมทีม เก็บเลเวล และเลือกชะตาของเรวาเนียร์</p>
+      <div class="menuButtons">
+        <button onclick="startNewFromMenu()">New Game</button>
+        <button class="secondary" onclick="continueGame()">Continue / Load Save</button>
+        <button class="secondary" onclick="openSettings()">Settings</button>
+      </div>
+      <div class="menuFooter">Save จะเก็บในเครื่อง/browser ด้วย localStorage</div>
+      <div class="installHint">มือถือ: กด Fullscreen หลังเข้าเกม หรือ Add to Home Screen เพื่อเล่นเต็มจอเหมือนแอป</div>
+    </div>
+  </section>
+
+  <section id="introScreen" class="introScreen hidden">
+    <div class="introCard">
+      <h2>Intro</h2>
+      <div class="introText" id="introText"></div>
+      <div class="menuButtons">
+        <button onclick="finishIntro()">เข้าสู่การสร้างตัวละคร</button>
+        <button class="secondary" onclick="skipIntro()">Skip Intro</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="settingsOverlay" class="settingsOverlay hidden">
+    <div class="settingsCard">
+      <h2>Settings</h2>
+      <div class="settingsGrid">
+        <div class="settingLine">
+          <span>Background Music</span>
+          <button class="secondary" onclick="toggleMusic()" id="settingsMusicBtn">Music: OFF</button>
+        </div>
+        <div class="settingLine">
+          <span>Sound Effects</span>
+          <button class="secondary" onclick="toggleSfx()" id="settingsSfxBtn">SFX: ON</button>
+        </div>
+        <div class="settingLine">
+          <span>Visual Effects</span>
+          <button class="secondary" onclick="toggleVfx()" id="vfxBtn">VFX: ON</button>
+        </div>
+        <div class="settingLine">
+          <span>Fullscreen</span>
+          <button class="secondary" onclick="toggleFullscreen()" id="settingsFullscreenBtn">Fullscreen: OFF</button>
+        </div>
+        <div class="settingLine">
+          <span>Music Volume</span>
+          <input id="settingsMusicVolume" type="range" min="0" max="100" value="35" oninput="setMusicVolume(this.value)">
+        </div>
+        <div class="settingLine">
+          <span>SFX Volume</span>
+          <input id="settingsSfxVolume" type="range" min="0" max="100" value="55" oninput="setSfxVolume(this.value)">
+        </div>
+      </div>
+      <div class="menuButtons" style="margin-top:18px;">
+        <button onclick="closeSettings()">Close</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="app hidden" id="appRoot">
+    <div class="appShell">
+    <div class="topBar">
+      <button class="secondary" onclick="saveGame()">Save</button>
+      <button class="secondary" onclick="toggleFullscreen()" id="fullscreenBtn">Fullscreen</button>
+      <button class="secondary" onclick="openSettings()">Settings</button>
+      <button class="secondary" onclick="returnToMainMenu()">Main Menu</button>
+    </div>
+    <div class="title">
+      <h1>บัลลังก์แห่งเงาจันทร์</h1>
+      <p>Deep DnD HTML Game — สร้างตัวละคร เก็บเลเวล หาเพื่อนร่วมทีม ต่อสู้ และปลดล็อกหลายฉากจบ</p>
+    </div>
+
+    <div class="layout">
+      <aside class="panel">
+        <div id="createPanel">
+          <h2>สร้างตัวละคร</h2>
+          <label>ชื่อตัวละคร</label>
+          <input id="charName" placeholder="เช่น Riven" />
+
+          <label>เผ่า</label>
+          <select id="race">
+            <option value="human">มนุษย์ — สมดุลทุกด้าน</option>
+            <option value="moonElf">เอลฟ์จันทร์ — เร็วและใช้เวทเก่ง</option>
+            <option value="ironDwarf">คนแคระเหล็ก — ถึกและเลือดเยอะ</option>
+            <option value="beastkin">เผ่าอสูร — โจมตีแรง</option>
+            <option value="shadowborn">ผู้เกิดจากเงา — ลอบเร้นและดวงสูง</option>
+            <option value="starfallen">ผู้ร่วงจากดาว — เวทสูงแต่เปราะบาง</option>
+          </select>
+
+          <label>คลาส</label>
+          <select id="classType">
+            <option value="warrior">นักรบ — Heavy Slash</option>
+            <option value="mage">นักเวท — Fire Bolt</option>
+            <option value="assassin">นักฆ่า — Shadow Step</option>
+            <option value="cleric">นักบวช — Holy Light</option>
+            <option value="ranger">นักล่า — Piercing Shot</option>
+            <option value="hexblade">Hexblade — Curse Edge</option>
+          </select>
+
+          <label>พรสวรรค์</label>
+          <select id="talent">
+            <option value="bloodPact">Blood Pact — เลือดต่ำแล้วโจมตีแรงขึ้น</option>
+            <option value="starBlessing">Star Blessing — ทอยใหม่ได้ 1 ครั้งต่อบท</option>
+            <option value="cursedEye">Cursed Eye — เห็นคำโกหกและกับดัก</option>
+            <option value="ironWill">Iron Will — ต้านสถานะผิดปกติ</option>
+            <option value="luckySoul">Lucky Soul — ดวงช่วยเมื่อทอยแย่</option>
+            <option value="leaderAura">Leader Aura — เพื่อนร่วมทีมโจมตีแรงขึ้น</option>
+          </select>
+
+          <button class="full" onclick="createCharacter()">เริ่มผจญภัย</button>
+        </div>
+
+        <div id="characterPanel" class="hidden">
+          <h2 id="displayName">ตัวละคร</h2>
+          <div id="tags"></div>
+
+          <div class="barWrap">
+            <div class="barLabel"><span>HP</span><span id="hpText"></span></div>
+            <div class="bar"><div id="hpBar" class="barFill"></div></div>
+          </div>
+          <div class="barWrap">
+            <div class="barLabel"><span>MP</span><span id="mpText"></span></div>
+            <div class="bar"><div id="mpBar" class="barFill"></div></div>
+          </div>
+          <div class="barWrap">
+            <div class="barLabel"><span>EXP</span><span id="expText"></span></div>
+            <div class="bar"><div id="expBar" class="barFill"></div></div>
+          </div>
+
+          <h3>ค่าสถานะ</h3>
+          <div class="stats" id="statsBox"></div>
+
+          <h3>ค่าชะตา</h3>
+          <div class="stats">
+            <div class="stat">Level: <b id="levelText">1</b></div>
+            <div class="stat">Depth: <b id="depthText">1</b></div>
+            <div class="stat">Humanity: <b id="humanityText">50</b></div>
+            <div class="stat">Corruption: <b id="corruptionText">0</b></div>
+            <div class="stat">Crystal: <b id="crystalText">0</b>/4</div>
+            <div class="stat">Gold: <b id="goldText">0</b></div>
+          </div>
+
+          <h3>ทีมของคุณ</h3>
+          <div id="allyList" class="small muted">ยังไม่มีเพื่อนร่วมทีม</div>
+
+          <button class="secondary full" onclick="rollFreeD20()">ทอย D20</button>
+          <button class="green full" onclick="restParty()">พักทีม / ฟื้นฟู</button>
+
+          <h3>เสียง</h3>
+          <div class="audioControls">
+            <button class="secondary" onclick="toggleMusic()" id="musicBtn">Music: OFF</button>
+            <button class="secondary" onclick="toggleSfx()" id="sfxBtn">SFX: ON</button>
+          </div>
+          <div class="volumeRow">
+            <span>Music</span>
+            <input id="musicVolume" type="range" min="0" max="100" value="35" oninput="setMusicVolume(this.value)">
+          </div>
+          <div class="volumeRow">
+            <span>SFX</span>
+            <input id="sfxVolume" type="range" min="0" max="100" value="55" oninput="setSfxVolume(this.value)">
+          </div>
+
+          <button class="secondary full" onclick="saveGame()">Save Game</button>
+          <button class="secondary full" onclick="returnToMainMenu()">กลับ Main Menu</button>
+          <button class="danger full" onclick="restartGame()">เริ่มใหม่</button>
+          <div class="log" id="logBox"></div>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <h2>เนื้อเรื่อง</h2>
+        <div id="story" class="storyBox">สร้างตัวละครก่อนเพื่อเริ่มเกม
+
+คุณจะตื่นขึ้นมาในคุกใต้ปราสาท ในคืนที่ดวงจันทร์สีดำกลับมาบนฟ้าอีกครั้ง...</div>
+        <div id="enemyBox" class="enemyCard hidden"></div>
+        <div id="choices" class="choices"></div>
+      </main>
+      <div class="mobileBottomNav">
+        <button onclick="saveGame()">Save</button>
+        <button onclick="toggleFullscreen()">Full</button>
+        <button onclick="openSettings()">Settings</button>
+        <button onclick="returnToMainMenu()">Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const races = {
+      human: { name: "มนุษย์", mod: { STR: 1, AGI: 1, INT: 1, VIT: 1, CHA: 1, LUCK: 1, WIS: 1, PER: 1, END: 1, DEX: 1 } },
+      moonElf: { name: "เอลฟ์จันทร์", mod: { STR: 0, AGI: 2, INT: 2, VIT: -1, CHA: 1, LUCK: 0, WIS: 2, PER: 1, END: -1, DEX: 1 } },
+      ironDwarf: { name: "คนแคระเหล็ก", mod: { STR: 1, AGI: -1, INT: 0, VIT: 3, CHA: 0, LUCK: 0, WIS: 1, PER: 0, END: 3, DEX: -1 } },
+      beastkin: { name: "เผ่าอสูร", mod: { STR: 3, AGI: 1, INT: 0, VIT: 1, CHA: -1, LUCK: 0, WIS: 0, PER: 2, END: 1, DEX: 1 } },
+      shadowborn: { name: "ผู้เกิดจากเงา", mod: { STR: 0, AGI: 2, INT: 0, VIT: 0, CHA: -1, LUCK: 2, WIS: 0, PER: 2, END: 0, DEX: 2 } },
+      starfallen: { name: "ผู้ร่วงจากดาว", mod: { STR: -1, AGI: 1, INT: 3, VIT: -1, CHA: 1, LUCK: 2, WIS: 2, PER: 1, END: -1, DEX: 0 } }
+    };
+
+    const classes = {
+      warrior: { name: "นักรบ", skill: "Heavy Slash", mod: { STR: 2, AGI: 0, INT: 0, VIT: 2, CHA: 0, LUCK: 0, WIS: 0, PER: 0, END: 2, DEX: 0 }, mp: 10 },
+      mage: { name: "นักเวท", skill: "Fire Bolt", mod: { STR: 0, AGI: 0, INT: 3, VIT: 0, CHA: 0, LUCK: 1, WIS: 2, PER: 0, END: 0, DEX: 0 }, mp: 28 },
+      assassin: { name: "นักฆ่า", skill: "Shadow Step", mod: { STR: 1, AGI: 3, INT: 0, VIT: 0, CHA: 0, LUCK: 1, WIS: 0, PER: 2, END: 0, DEX: 3 }, mp: 16 },
+      cleric: { name: "นักบวช", skill: "Holy Light", mod: { STR: 0, AGI: 0, INT: 2, VIT: 1, CHA: 2, LUCK: 0, WIS: 3, PER: 0, END: 1, DEX: 0 }, mp: 28 },
+      ranger: { name: "นักล่า", skill: "Piercing Shot", mod: { STR: 1, AGI: 2, INT: 0, VIT: 0, CHA: 0, LUCK: 2, WIS: 1, PER: 3, END: 0, DEX: 2 }, mp: 16 },
+      hexblade: { name: "Hexblade", skill: "Curse Edge", mod: { STR: 2, AGI: 1, INT: 2, VIT: 0, CHA: -1, LUCK: 1, WIS: 0, PER: 1, END: 0, DEX: 1 }, mp: 22 }
+    };
+
+    const talents = {
+      bloodPact: "Blood Pact",
+      starBlessing: "Star Blessing",
+      cursedEye: "Cursed Eye",
+      ironWill: "Iron Will",
+      luckySoul: "Lucky Soul",
+      leaderAura: "Leader Aura"
+    };
+
+    const visualFx = {
+      enabled: true
+    };
+
+    function flashScreen(type = "light") {
+      if (!visualFx.enabled) return;
+      const flash = document.getElementById("screenFlash");
+      const cls = type === "dark" ? "flashDark" : type === "damage" ? "flashDamage" : "flashLight";
+      flash.classList.remove("flashLight", "flashDark", "flashDamage");
+      void flash.offsetWidth;
+      flash.classList.add(cls);
+    }
+
+    function shakeScreen() {
+      if (!visualFx.enabled) return;
+      const root = document.getElementById("appRoot");
+      root.classList.remove("shake");
+      void root.offsetWidth;
+      root.classList.add("shake");
+    }
+
+    function pulseElement(id) {
+      if (!visualFx.enabled) return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove("pulseGlow");
+      void el.offsetWidth;
+      el.classList.add("pulseGlow");
+    }
+
+    function enemyHitFx() {
+      if (!visualFx.enabled) return;
+      const el = document.getElementById("enemyBox");
+      if (!el) return;
+      el.classList.remove("enemyHit");
+      void el.offsetWidth;
+      el.classList.add("enemyHit");
+    }
+
+    function floatingText(text, kind = "hit") {
+      if (!visualFx.enabled) return;
+      const el = document.createElement("div");
+      el.className = "floatText";
+      el.textContent = text;
+      const colors = {
+        hit: "#ff6b7a",
+        heal: "#65f0ae",
+        gold: "#ffd36a",
+        magic: "#c59bff",
+        level: "#ffffff"
+      };
+      el.style.color = colors[kind] || colors.hit;
+      el.style.left = (window.innerWidth * 0.52 + Math.random() * 120 - 60) + "px";
+      el.style.top = (window.innerHeight * 0.45 + Math.random() * 80 - 40) + "px";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1050);
+    }
+
+    function burstParticles(kind = "magic", count = 18) {
+      if (!visualFx.enabled) return;
+      const layer = document.getElementById("fxLayer");
+      const colors = {
+        magic: "#b98cff",
+        hit: "#ff536b",
+        heal: "#60e6a2",
+        gold: "#ffd36a",
+        dark: "#6d2cff",
+        level: "#ffffff"
+      };
+      const cx = window.innerWidth * 0.55;
+      const cy = window.innerHeight * 0.42;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.color = colors[kind] || colors.magic;
+        p.style.background = colors[kind] || colors.magic;
+        p.style.left = cx + (Math.random() * 80 - 40) + "px";
+        p.style.top = cy + (Math.random() * 70 - 35) + "px";
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 60 + Math.random() * 130;
+        p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+        p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+        layer.appendChild(p);
+        setTimeout(() => p.remove(), 950);
+      }
+    }
+
+    function playVfx(name, value = "") {
+      if (name === "roll") { burstParticles("magic", 10); pulseElement("story"); }
+      if (name === "hit") { enemyHitFx(); burstParticles("hit", 18); floatingText(value || "HIT", "hit"); }
+      if (name === "damage") { flashScreen("damage"); shakeScreen(); floatingText(value || "-HP", "hit"); }
+      if (name === "heal") { burstParticles("heal", 16); floatingText(value || "+HP", "heal"); flashScreen("light"); }
+      if (name === "recruit") { burstParticles("heal", 24); floatingText("ALLY JOINED", "heal"); pulseElement("allyList"); }
+      if (name === "level") { burstParticles("level", 34); floatingText("LEVEL UP!", "level"); flashScreen("light"); }
+      if (name === "dark") { burstParticles("dark", 28); flashScreen("dark"); }
+      if (name === "gold") { burstParticles("gold", 14); floatingText("+GOLD", "gold"); }
+      if (name === "ending") { burstParticles("level", 45); flashScreen("light"); }
+    }
+
+    const audio = {
+      ctx: null,
+      musicOn: false,
+      sfxOn: true,
+      musicVolume: 0.35,
+      sfxVolume: 0.55,
+      musicTimer: null,
+      musicStep: 0
+    };
+
+    function initAudio() {
+      if (!audio.ctx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audio.ctx = new AudioContext();
+      }
+      if (audio.ctx.state === "suspended") audio.ctx.resume();
+    }
+
+    function playTone(freq, duration = 0.12, type = "sine", volume = 0.35, delay = 0) {
+      if (!audio.sfxOn && type !== "music") return;
+      initAudio();
+      const now = audio.ctx.currentTime + delay;
+      const osc = audio.ctx.createOscillator();
+      const gain = audio.ctx.createGain();
+      osc.type = type === "music" ? "triangle" : type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain);
+      gain.connect(audio.ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+
+    function playSfx(name) {
+      if (!audio.sfxOn) return;
+      const v = audio.sfxVolume;
+      if (name === "click") playTone(520, 0.06, "square", v * 0.16);
+      if (name === "roll") { playTone(330, 0.08, "triangle", v * 0.22); playTone(420, 0.08, "triangle", v * 0.22, 0.08); playTone(520, 0.09, "triangle", v * 0.22, 0.16); playVfx("roll"); }
+      if (name === "hit") { playTone(150, 0.10, "sawtooth", v * 0.32); playTone(90, 0.12, "sawtooth", v * 0.25, 0.05); playVfx("hit"); }
+      if (name === "damage") { playTone(120, 0.18, "square", v * 0.30); playVfx("damage"); }
+      if (name === "heal") { playTone(480, 0.10, "sine", v * 0.22); playTone(720, 0.14, "sine", v * 0.22, 0.08); playVfx("heal"); }
+      if (name === "recruit") { playTone(392, 0.10, "sine", v * 0.20); playTone(523, 0.12, "sine", v * 0.23, 0.10); playTone(659, 0.16, "sine", v * 0.25, 0.22); playVfx("recruit"); }
+      if (name === "level") { playTone(440, 0.09, "triangle", v * 0.24); playTone(554, 0.09, "triangle", v * 0.24, 0.09); playTone(659, 0.09, "triangle", v * 0.24, 0.18); playTone(880, 0.18, "triangle", v * 0.26, 0.28); playVfx("level"); }
+      if (name === "ending") { playTone(220, 0.20, "sine", v * 0.20); playTone(330, 0.25, "sine", v * 0.22, 0.16); playTone(440, 0.35, "sine", v * 0.24, 0.34); playVfx("ending"); }
+      if (name === "dark") { playTone(80, 0.25, "sawtooth", v * 0.25); playTone(66, 0.35, "sawtooth", v * 0.20, 0.16); playVfx("dark"); }
+    }
+
+    function toggleMusic() {
+      initAudio();
+      audio.musicOn = !audio.musicOn;
+      syncSettingsButtons();
+      if (audio.musicOn) startMusic();
+      else stopMusic();
+      playSfx("click");
+    }
+
+    function toggleSfx() {
+      audio.sfxOn = !audio.sfxOn;
+      syncSettingsButtons();
+      if (audio.sfxOn) playSfx("click");
+    }
+
+    function setMusicVolume(value) {
+      audio.musicVolume = Number(value) / 100;
+      syncSettingsButtons();
+    }
+
+    function setSfxVolume(value) {
+      audio.sfxVolume = Number(value) / 100;
+      syncSettingsButtons();
+      playSfx("click");
+    }
+
+    function startMusic() {
+      stopMusic();
+      const notes = [196, 246.94, 293.66, 246.94, 174.61, 220, 261.63, 220];
+      audio.musicTimer = setInterval(() => {
+        if (!audio.musicOn) return;
+        initAudio();
+        const note = notes[audio.musicStep % notes.length];
+        const v = audio.musicVolume * 0.11;
+        const now = audio.ctx.currentTime;
+        const osc = audio.ctx.createOscillator();
+        const gain = audio.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(note, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, v), now + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+        osc.connect(gain);
+        gain.connect(audio.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.82);
+        if (audio.musicStep % 2 === 0) {
+          playTone(note / 2, 0.55, "music", audio.musicVolume * 0.055);
+        }
+        audio.musicStep++;
+      }, 520);
+    }
+
+    function stopMusic() {
+      if (audio.musicTimer) clearInterval(audio.musicTimer);
+      audio.musicTimer = null;
+    }
+
+    const recruitableAllies = {
+      thorne: {
+        id: "thorne", name: "Thorne", role: "อดีตอัศวิน", hp: 46, maxHP: 46, power: 7, defense: 2,
+        ability: "Guard: มีโอกาสรับดาเมจแทนคุณ", recruited: false
+      },
+      mira: {
+        id: "mira", name: "Mira", role: "เด็กผู้ถือแสง", hp: 32, maxHP: 32, power: 4, defense: 1,
+        ability: "Moon Heal: หลังต่อสู้มีโอกาสฮีลทีม", recruited: false
+      },
+      kael: {
+        id: "kael", name: "Kael", role: "นักล่าเงา", hp: 38, maxHP: 38, power: 8, defense: 1,
+        ability: "Marked Shot: เพิ่มดาเมจตอนสู้บอส", recruited: false
+      },
+      sera: {
+        id: "sera", name: "Sera", role: "แม่มดแห่งคลังหลวง", hp: 34, maxHP: 34, power: 9, defense: 0,
+        ability: "Arcane Break: ลด Defense ศัตรูตอนเริ่มสู้", recruited: false
+      },
+      rook: {
+        id: "rook", name: "Rook", role: "โจรกลับใจ", hp: 36, maxHP: 36, power: 6, defense: 1,
+        ability: "Treasure Sense: ได้ Gold เพิ่มจากเหตุการณ์", recruited: false
+      }
+    };
+
+    const SAVE_KEY = "moonshade_dnd_save_v1";
+
+    let player = null;
+    let enemy = null;
+    let state = newGameState();
+    let currentSceneKey = "cell";
+
+    const introLines = `ในยุคที่เรวาเนียร์ยังมีจันทร์สองดวง ผู้คนเชื่อว่าแสงและเงาคือสมดุลของโลก
+
+แต่คืนหนึ่ง จันทร์สีดำกลับขึ้นบนฟ้าอีกครั้ง
+
+ศพเริ่มเดิน เด็กบางคนเกิดมาโดยไม่มีเงา และบัลลังก์ของกษัตริย์ถูกพบว่าเปื้อนเลือด
+
+คุณตื่นขึ้นมาในคุกใต้ปราสาทโดยจำได้เพียงชื่อของตัวเอง
+
+เสียงหนึ่งกระซิบในหัวว่า...
+
+"อย่าไว้ใจผู้ที่ยังมีเงา"`;
+
+    function newGameState() {
+      return {
+        chapter: 1,
+        depth: 1,
+        humanity: 50,
+        corruption: 0,
+        crystals: 0,
+        gold: 10,
+        allies: [],
+        flags: {},
+        starRerollUsed: false
+      };
+    }
+
+    const scenes = {
+      cell: {
+        text: () => `Depth ${state.depth}: คุกใต้ปราสาท
+
+คุณตื่นขึ้นมาในคุกใต้ปราสาท กำแพงเปียกชื้น ประตูเหล็กขึ้นสนิม และแสงจันทร์สีดำลอดผ่านหน้าต่างเล็กๆ
+
+ตรงมุมห้องมีนักโทษอีกคนก้มหน้าอยู่ เขาพูดเบาๆว่า
+"ถ้าเจ้ามีเงาอยู่ จงหนีไปก่อนมันจะกินเจ้า..."`,
+        choices: [
+          { text: "ตรวจศพทหารยาม [PER/LUCK]", action: () => checkGuard() },
+          { text: "คุยกับนักโทษ [CHA/WIS]", action: () => talkPrisoner() },
+          { text: "พยายามพังประตูคุก [STR/END]", action: () => breakDoor() },
+          { text: "มองแสงจันทร์สีดำ [INT]", action: () => blackMoon() }
+        ]
+      },
+      hallway: {
+        text: () => `Depth ${state.depth}: โถงคุก
+
+คุณออกจากห้องขังได้สำเร็จ โถงคุกเต็มไปด้วยรอยเลือด แต่ไม่มีศพ มีเพียงเงาบนพื้นกำลังเคลื่อนไหวเหมือนสิ่งมีชีวิต
+
+ที่ปลายทางมีบันไดขึ้นสู่ปราสาท และประตูอีกบานที่มีเสียงร้องขอความช่วยเหลือ`,
+        choices: [
+          { text: "ขึ้นบันไดสู่ปราสาท", action: () => goThroneRoom() },
+          { text: "เปิดประตูช่วยคนที่ร้อง [CHA/WIS]", action: () => rescueRoom() },
+          { text: "ตรวจสอบเงาบนพื้น [INT/PER]", action: () => inspectShadow() },
+          { text: "ค้นคลังเก็บของนักโทษ [DEX/LUCK]", action: () => prisonCache() }
+        ]
+      },
+      village: {
+        text: () => `Depth ${state.depth}: หมู่บ้านไร้เงา
+
+คุณหนีออกจากปราสาทและมาถึงหมู่บ้าน Lunmere
+
+ชาวบ้านทุกคนยังมีชีวิต แต่ไม่มีใครมีเงา เด็กคนหนึ่งชื่อ Mira ถือเศษคริสตัลสีดำไว้และพูดว่า
+"ราชินีบอกว่า สิ่งนี้จะช่วยโลก..."`,
+        choices: [
+          { text: "ขอเศษคริสตัลอย่างสันติ [CHA]", action: () => askCrystal() },
+          { text: "แย่งเศษคริสตัลทันที", action: () => stealCrystal() },
+          { text: "ตรวจสอบ Mira ด้วยพลังหรือสัญชาตญาณ [INT/WIS]", action: () => inspectChild() },
+          { text: "ช่วยชาวบ้านซ่อมแนวป้องกัน [END/STR]", action: () => helpVillage() }
+        ]
+      },
+      forest: {
+        text: () => `Depth ${state.depth}: ป่าต้องสาป
+
+ต้นไม้ทุกต้นไม่มีใบ แต่มีเงาห้อยอยู่แทนผลไม้ หมาป่าเงาจันทร์กระโดดออกมาขวางทาง
+
+ชายคนหนึ่งชื่อ Kael กำลังเล็งธนูใส่มันจากหลังต้นไม้ เขาอาจเป็นมิตรหรือศัตรูก็ได้`,
+        choices: [
+          { text: "เริ่มต่อสู้กับ Shadow Wolf", action: () => startCombat("Shadow Wolf", 50, 13, 9, "wolfDefeated", true) },
+          { text: "ชวน Kael ร่วมมือ [CHA/PER]", action: () => recruitKael() },
+          { text: "ลอบผ่านมันไป [AGI/DEX]", action: () => sneakWolf() },
+          { text: "ตามรอยเงาลึกเข้าไป [PER/WIS]", action: () => deepForestPath() }
+        ]
+      },
+      catacombs: {
+        text: () => `Depth ${state.depth}: สุสานใต้เมือง
+
+ทางลับจากป่าพาคุณสู่สุสานเก่าที่อยู่ใต้เมืองหลวง ที่นี่มีประตูหิน 3 บาน และแต่ละบานสลักคำว่า เลือด ความทรงจำ และการทรยศ
+
+ยิ่งลงลึก ศัตรูจะยิ่งแข็งแกร่ง แต่รางวัลและพันธมิตรจะมากขึ้น`,
+        choices: [
+          { text: "เปิดประตูเลือด [STR/END]", action: () => bloodDoor() },
+          { text: "เปิดประตูความทรงจำ [INT/WIS]", action: () => memoryDoor() },
+          { text: "เปิดประตูการทรยศ [CHA/DEX]", action: () => betrayalDoor() },
+          { text: "ออกจากสุสานไปเมืองหลวง", action: () => { state.chapter = 3; showScene("capital"); } }
+        ]
+      },
+      capital: {
+        text: () => `Depth ${state.depth}: เมืองหลวงใต้จันทร์ดำ
+
+คุณกลับมาถึงเมืองหลวงและพบราชินีลูซาเรียยืนอยู่หน้าบัลลังก์เปื้อนเลือด
+
+ด้านหลังเธอมีแม่มดชื่อ Sera ถูกล่ามโซ่ เธอพยายามส่งสัญญาณเตือนคุณ
+
+ราชินียื่นมือมาให้คุณ
+"มอบคริสตัลให้ข้า แล้วข้าจะจบฝันร้ายนี้"`,
+        choices: [
+          { text: "เชื่อราชินีและมอบคริสตัล", action: () => trustQueen() },
+          { text: "ปฏิเสธและเตรียมสู้", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) },
+          { text: "ถามความจริงด้วยการเจรจา [CHA/WIS]", action: () => questionQueen() },
+          { text: "ช่วย Sera จากโซ่เวท [INT/DEX]", action: () => rescueSera() }
+        ]
+      },
+      finalGate: {
+        text: () => `Depth ${state.depth}: ประตูเงาจันทร์
+
+ประตูเงาจันทร์เปิดออก ด้านในคือบัลลังก์ที่ทำจากกระดูกของกษัตริย์นับร้อย และบนบัลลังก์นั้นมีเทพเงาจันทร์กำลังตื่นขึ้น
+
+นี่คือการต่อสู้สุดท้าย ทีมของคุณทุกคนจะช่วยในการต่อสู้`,
+        choices: [
+          { text: "เข้าสู้กับ Moonshade God", action: () => startCombat("Moonshade God", 120, 18, 17, "finalDefeated", true) },
+          { text: "ใช้ Humanity ปิดผนึกประตู", action: () => sealWithHumanity() },
+          { text: "ใช้ Corruption ยึดพลังเทพ", action: () => claimDarkPower() },
+          { text: "ให้เพื่อนร่วมทีมช่วยประกอบพิธี [Team Check]", action: () => teamRitual() }
+        ]
+      }
+    };
+
+    function startNewFromMenu() {
+      playSfx("click");
+      document.getElementById("mainMenu").classList.add("hidden");
+      document.getElementById("introScreen").classList.remove("hidden");
+      document.getElementById("introText").textContent = introLines;
+      flashScreen("dark");
+    }
+
+    function finishIntro() {
+      playSfx("click");
+      document.getElementById("introScreen").classList.add("hidden");
+      document.getElementById("appRoot").classList.remove("hidden");
+      restartGame(false);
+    }
+
+    function skipIntro() {
+      finishIntro();
+    }
+
+    function returnToMainMenu() {
+      playSfx("click");
+      document.getElementById("appRoot").classList.add("hidden");
+      document.getElementById("introScreen").classList.add("hidden");
+      document.getElementById("settingsOverlay").classList.add("hidden");
+      document.getElementById("mainMenu").classList.remove("hidden");
+    }
+
+    function openSettings() {
+      playSfx("click");
+      document.getElementById("settingsOverlay").classList.remove("hidden");
+      syncSettingsButtons();
+    }
+
+    function closeSettings() {
+      playSfx("click");
+      document.getElementById("settingsOverlay").classList.add("hidden");
+    }
+
+    function toggleVfx() {
+      visualFx.enabled = !visualFx.enabled;
+      syncSettingsButtons();
+      if (visualFx.enabled) playVfx("level");
+    }
+
+    function syncSettingsButtons() {
+      const musicText = audio.musicOn ? "Music: ON" : "Music: OFF";
+      const sfxText = audio.sfxOn ? "SFX: ON" : "SFX: OFF";
+      const vfxText = visualFx.enabled ? "VFX: ON" : "VFX: OFF";
+      const fullscreenText = document.fullscreenElement ? "Fullscreen: ON" : "Fullscreen: OFF";
+      const ids = [
+        ["musicBtn", musicText],
+        ["sfxBtn", sfxText],
+        ["settingsMusicBtn", musicText],
+        ["settingsSfxBtn", sfxText],
+        ["vfxBtn", vfxText],
+        ["settingsFullscreenBtn", fullscreenText],
+        ["fullscreenBtn", document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen"]
+      ];
+      ids.forEach(([id, text]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      });
+      const sliders = [
+        ["settingsMusicVolume", Math.round(audio.musicVolume * 100)],
+        ["settingsSfxVolume", Math.round(audio.sfxVolume * 100)],
+        ["musicVolume", Math.round(audio.musicVolume * 100)],
+        ["sfxVolume", Math.round(audio.sfxVolume * 100)]
+      ];
+      sliders.forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+      });
+    }
+
+    async function toggleFullscreen() {
+      playSfx("click");
+      try {
+        if (!document.fullscreenElement) {
+          const el = document.documentElement;
+          if (el.requestFullscreen) await el.requestFullscreen();
+        } else {
+          if (document.exitFullscreen) await document.exitFullscreen();
+        }
+      } catch (err) {
+        alert("Browser นี้อาจไม่อนุญาต fullscreen จากปุ่มนี้ ให้ลอง Add to Home Screen แทน");
+      }
+      document.body.classList.toggle("fullscreenMode", !!document.fullscreenElement);
+      syncSettingsButtons();
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      document.body.classList.toggle("fullscreenMode", !!document.fullscreenElement);
+      syncSettingsButtons();
+    });
+
+    function saveGame() {
+      if (!player) {
+        alert("ยังไม่มีตัวละครให้ Save");
+        return;
+      }
+      const allyData = {};
+      Object.keys(recruitableAllies).forEach(id => {
+        allyData[id] = {
+          hp: recruitableAllies[id].hp,
+          recruited: recruitableAllies[id].recruited
+        };
+      });
+      const saveData = {
+        player,
+        state,
+        currentSceneKey,
+        allyData,
+        settings: {
+          musicOn: audio.musicOn,
+          sfxOn: audio.sfxOn,
+          musicVolume: audio.musicVolume,
+          sfxVolume: audio.sfxVolume,
+          vfxEnabled: visualFx.enabled
+        }
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+      playVfx("gold");
+      log("บันทึกเกมแล้ว");
+    }
+
+    function continueGame() {
+      playSfx("click");
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) {
+        alert("ยังไม่มี Save ในเครื่องนี้");
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        loadGameData(data);
+        document.getElementById("mainMenu").classList.add("hidden");
+        document.getElementById("introScreen").classList.add("hidden");
+        document.getElementById("appRoot").classList.remove("hidden");
+        document.getElementById("createPanel").classList.add("hidden");
+        document.getElementById("characterPanel").classList.remove("hidden");
+        showScene(currentSceneKey || "cell");
+        log("โหลด Save สำเร็จ");
+      } catch (err) {
+        alert("Save เสียหรืออ่านไม่ได้");
+        console.error(err);
+      }
+    }
+
+    function loadGameData(data) {
+      player = data.player;
+      state = data.state || newGameState();
+      currentSceneKey = data.currentSceneKey || "cell";
+      if (data.allyData) {
+        Object.keys(data.allyData).forEach(id => {
+          if (recruitableAllies[id]) {
+            recruitableAllies[id].hp = data.allyData[id].hp;
+            recruitableAllies[id].recruited = data.allyData[id].recruited;
+          }
+        });
+      }
+      if (data.settings) {
+        audio.sfxOn = data.settings.sfxOn ?? audio.sfxOn;
+        audio.musicVolume = data.settings.musicVolume ?? audio.musicVolume;
+        audio.sfxVolume = data.settings.sfxVolume ?? audio.sfxVolume;
+        visualFx.enabled = data.settings.vfxEnabled ?? visualFx.enabled;
+      }
+      enemy = null;
+      syncSettingsButtons();
+      updateUI();
+    }
+
+    window.addEventListener("load", () => {
+      syncSettingsButtons();
+    });
+
+    function createCharacter() {
+      const name = document.getElementById("charName").value.trim() || "ผู้ไร้นาม";
+      const raceKey = document.getElementById("race").value;
+      const classKey = document.getElementById("classType").value;
+      const talentKey = document.getElementById("talent").value;
+      const base = { STR: 3, AGI: 3, INT: 3, VIT: 3, CHA: 3, LUCK: 3, WIS: 3, PER: 3, END: 3, DEX: 3 };
+      const race = races[raceKey];
+      const cls = classes[classKey];
+      for (let stat in base) {
+        base[stat] += race.mod[stat] || 0;
+        base[stat] += cls.mod[stat] || 0;
+        if (base[stat] < 1) base[stat] = 1;
+      }
+      player = {
+        name,
+        race: race.name,
+        className: cls.name,
+        skill: cls.skill,
+        talent: talents[talentKey],
+        talentKey,
+        stats: base,
+        level: 1,
+        exp: 0,
+        nextExp: 50,
+        maxHP: 38 + base.VIT * 7 + base.END * 3,
+        hp: 38 + base.VIT * 7 + base.END * 3,
+        maxMP: cls.mp + base.INT * 4 + base.WIS * 2,
+        mp: cls.mp + base.INT * 4 + base.WIS * 2
+      };
+      if (talentKey === "cursedEye") state.corruption += 5;
+      document.getElementById("mainMenu").classList.add("hidden");
+      document.getElementById("introScreen").classList.add("hidden");
+      document.getElementById("appRoot").classList.remove("hidden");
+      document.getElementById("createPanel").classList.add("hidden");
+      document.getElementById("characterPanel").classList.remove("hidden");
+      log(`สร้างตัวละคร ${player.name} สำเร็จ`);
+      updateUI();
+      showScene("cell");
+    }
+
+    function updateUI() {
+      if (!player) return;
+      document.getElementById("displayName").textContent = player.name;
+      document.getElementById("tags").innerHTML = `
+        <span class="tag">${player.race}</span>
+        <span class="tag">${player.className}</span>
+        <span class="tag">${player.skill}</span>
+        <span class="tag">${player.talent}</span>`;
+      document.getElementById("hpText").textContent = `${player.hp}/${player.maxHP}`;
+      document.getElementById("mpText").textContent = `${player.mp}/${player.maxMP}`;
+      document.getElementById("expText").textContent = `${player.exp}/${player.nextExp}`;
+      document.getElementById("hpBar").style.width = Math.max(0, player.hp / player.maxHP * 100) + "%";
+      document.getElementById("mpBar").style.width = Math.max(0, player.mp / player.maxMP * 100) + "%";
+      document.getElementById("expBar").style.width = Math.max(0, player.exp / player.nextExp * 100) + "%";
+      document.getElementById("statsBox").innerHTML = Object.entries(player.stats).map(([k, v]) => `<div class="stat">${k}: <b>${v}</b></div>`).join("");
+      document.getElementById("levelText").textContent = player.level;
+      document.getElementById("depthText").textContent = state.depth;
+      document.getElementById("humanityText").textContent = state.humanity;
+      document.getElementById("corruptionText").textContent = state.corruption;
+      document.getElementById("crystalText").textContent = state.crystals;
+      document.getElementById("goldText").textContent = state.gold;
+      updateAllyList();
+    }
+
+    function updateAllyList() {
+      const box = document.getElementById("allyList");
+      if (!state.allies.length) {
+        box.innerHTML = "ยังไม่มีเพื่อนร่วมทีม";
+        return;
+      }
+      box.innerHTML = state.allies.map(id => {
+        const a = recruitableAllies[id];
+        return `<div class="allyCard"><b>${a.name}</b> — ${a.role}<br>HP ${a.hp}/${a.maxHP} | Power ${a.power}<br><span class="muted">${a.ability}</span></div>`;
+      }).join("");
+    }
+
+    function showScene(key) {
+      currentSceneKey = key;
+      enemy = null;
+      document.getElementById("enemyBox").classList.add("hidden");
+      const scene = scenes[key];
+      document.getElementById("story").textContent = scene.text();
+      renderChoices(scene.choices);
+      updateUI();
+    }
+
+    function renderChoices(choicesArray) {
+      const choices = document.getElementById("choices");
+      choices.innerHTML = "";
+      choicesArray.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.className = "choiceBtn";
+        btn.textContent = choice.text;
+        btn.onclick = () => {
+          playSfx("click");
+          choice.action();
+        };
+        choices.appendChild(btn);
+      });
+    }
+
+    function setStory(text, choicesArray) {
+      document.getElementById("story").textContent = text;
+      renderChoices(choicesArray);
+      updateUI();
+    }
+
+    function d20() {
+      let roll = Math.floor(Math.random() * 20) + 1;
+      if (player && player.talentKey === "luckySoul" && roll < 5 && Math.random() < 0.55) {
+        log(`Lucky Soul ทำงาน: ผลทอย ${roll} เปลี่ยนเป็น 10`);
+        roll = 10;
+      }
+      return roll;
+    }
+
+    function statBonus(stat) {
+      return player.stats[stat] || 0;
+    }
+
+    function skillCheck(primary, difficulty, secondary = null) {
+      playSfx("roll");
+      const roll = d20();
+      let bonus = statBonus(primary);
+      let text = `${primary} ${statBonus(primary)}`;
+      if (secondary) {
+        bonus += Math.floor(statBonus(secondary) / 2);
+        text += ` + ${secondary}/2 ${Math.floor(statBonus(secondary) / 2)}`;
+      }
+      const allyHelp = state.allies.length >= 2 ? 1 : 0;
+      const total = roll + bonus + allyHelp;
+      log(`ทอย D20: ${roll} + ${text} + Team ${allyHelp} = ${total} / ต้องการ ${difficulty}`);
+      return { roll, total, success: total >= difficulty };
+    }
+
+    function gainExp(amount) {
+      player.exp += amount;
+      log(`ได้รับ EXP ${amount}`);
+      while (player.exp >= player.nextExp) {
+        player.exp -= player.nextExp;
+        player.level++;
+        player.nextExp = Math.floor(player.nextExp * 1.35);
+        player.maxHP += 10 + player.stats.VIT;
+        player.maxMP += 6 + player.stats.INT;
+        player.hp = player.maxHP;
+        player.mp = player.maxMP;
+        const stats = Object.keys(player.stats);
+        const randomStat = stats[Math.floor(Math.random() * stats.length)];
+        player.stats[randomStat]++;
+        playSfx("level");
+        log(`Level Up! เลเวล ${player.level} และ ${randomStat} +1`);
+      }
+      updateUI();
+    }
+
+    function addAlly(id) {
+      if (!state.allies.includes(id)) {
+        state.allies.push(id);
+        recruitableAllies[id].recruited = true;
+        playSfx("recruit");
+        log(`${recruitableAllies[id].name} เข้าร่วมทีม`);
+        gainExp(15);
+      }
+      updateUI();
+    }
+
+    function partyPower() {
+      let power = player.stats.STR + player.stats.INT + player.stats.AGI + player.level;
+      state.allies.forEach(id => {
+        const a = recruitableAllies[id];
+        if (a.hp > 0) power += a.power;
+      });
+      if (player.talentKey === "leaderAura") power += state.allies.length * 2;
+      return power;
+    }
+
+    function deepen(amount = 1) {
+      state.depth += amount;
+      log(`Depth เพิ่มเป็น ${state.depth} ศัตรูและรางวัลจะสูงขึ้น`);
+      updateUI();
+    }
+
+    function checkGuard() {
+      const result = skillCheck("PER", 11, "LUCK");
+      if (result.success) {
+        state.humanity += 2;
+        state.gold += hasAlly("rook") ? 15 : 8;
+        playVfx("gold");
+        setStory(`คุณค้นศพทหารยามและพบกุญแจคุก จดหมายเปื้อนเลือด และเหรียญเล็กน้อย
+
+ในจดหมายเขียนว่า:
+"ราชินีไม่ได้ช่วยเรา นางกำลังเปิดประตูให้จันทร์ดำ"`, [{ text: "ออกไปยังโถงคุก", action: () => showScene("hallway") }]);
+      } else {
+        damagePlayer(6);
+        setStory(`คุณแตะศพทหารยาม แต่เงาของเขากัดมือคุณ
+
+คุณเสีย HP 6 แต่ยังพบกุญแจคุกได้`, [{ text: "ออกไปยังโถงคุก", action: () => showScene("hallway") }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function talkPrisoner() {
+      const result = skillCheck("CHA", 12, "WIS");
+      if (result.success) {
+        state.humanity += 8;
+        addAlly("thorne");
+        setStory(`นักโทษเงยหน้าขึ้น เขาคือ Thorne อดีตอัศวินของกษัตริย์
+
+เขามอบกุญแจให้คุณและเข้าร่วมทีม
+
+"ถ้าเจอเด็กไร้เงา อย่าฆ่าเขา เด็กคนนั้นคือกุญแจปิดผนึก"`, [{ text: "พา Thorne หนีไปด้วย", action: () => showScene("hallway") }]);
+      } else {
+        state.corruption += 3;
+        setStory(`นักโทษไม่ไว้ใจคุณ เขาถอยเข้าเงามืดและหายไป
+
+เหลือไว้เพียงกุญแจที่เปื้อนเลือด`, [{ text: "หยิบกุญแจแล้วออกไป", action: () => showScene("hallway") }]);
+      }
+      updateUI();
+    }
+
+    function breakDoor() {
+      const result = skillCheck("STR", 15, "END");
+      if (result.success) {
+        gainExp(8);
+        setStory(`คุณกระแทกประตูจนหลุดออกจากบานพับ
+
+เสียงดังลั่นไปทั่วคุก แต่ทางออกเปิดแล้ว`, [{ text: "รีบออกไป", action: () => showScene("hallway") }]);
+      } else {
+        damagePlayer(8);
+        setStory(`คุณพยายามพังประตูแต่ไหล่กระแทกเหล็กอย่างแรง
+
+เสีย HP 8 แต่ประตูยังล็อกอยู่`, [
+          { text: "ตรวจศพทหารยาม", action: () => checkGuard() },
+          { text: "คุยกับนักโทษ", action: () => talkPrisoner() }
+        ]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function blackMoon() {
+      playSfx("dark");
+      state.corruption += 8;
+      player.mp = Math.min(player.maxMP, player.mp + 12);
+      setStory(`คุณจ้องแสงจันทร์สีดำ
+
+เสียงกระซิบในหัวชัดขึ้น:
+"จงเอาคริสตัลมา แล้วบัลลังก์จะเป็นของเจ้า"
+
+คุณฟื้น MP 12 แต่ Corruption เพิ่มขึ้น`, [
+        { text: "ตรวจศพทหารยาม", action: () => checkGuard() },
+        { text: "พังประตูด้วยพลังเงา", action: () => showScene("hallway") }
+      ]);
+      updateUI();
+    }
+
+    function rescueRoom() {
+      const result = skillCheck("WIS", 12, "CHA");
+      if (result.success) {
+        state.humanity += 10;
+        state.crystals += 1;
+        gainExp(18);
+        setStory(`คุณช่วยหญิงชราคนหนึ่งออกมา
+
+เธอคือผู้เฝ้าคริสตัลดวงดาว เธอมอบคริสตัลชิ้นแรกให้คุณ และบอกทางไปหมู่บ้าน Lunmere`, [{ text: "เดินทางไปหมู่บ้าน Lunmere", action: () => { state.chapter = 2; deepen(); showScene("village"); } }]);
+      } else {
+        damagePlayer(10);
+        state.corruption += 5;
+        state.crystals += 1;
+        setStory(`เมื่อคุณเปิดประตู เงารูปร่างมนุษย์พุ่งเข้าโจมตี
+
+คุณเสีย HP 10 แต่หลังเงาสลาย คุณพบคริสตัลชิ้นแรก`, [{ text: "เดินทางไปหมู่บ้าน Lunmere", action: () => { state.chapter = 2; deepen(); showScene("village"); } }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function inspectShadow() {
+      const result = skillCheck(player.talentKey === "cursedEye" ? "LUCK" : "INT", 13, "PER");
+      if (result.success) {
+        gainExp(12);
+        setStory(`คุณอ่านการเคลื่อนไหวของเงาบนพื้นได้
+
+มันไม่ใช่ศัตรู แต่มันกำลังหนีจากสิ่งที่อยู่บนบัลลังก์ เงานำคุณสู่ทางลับ`, [{ text: "ตามเงาไปยังทางลับ", action: () => { state.crystals += 1; deepen(); showScene("village"); } }]);
+      } else {
+        damagePlayer(7);
+        setStory(`เงาพันข้อเท้าคุณและดูดพลังชีวิต
+
+เสีย HP 7`, [{ text: "ขึ้นบันไดสู่ปราสาท", action: () => goThroneRoom() }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function prisonCache() {
+      const result = skillCheck("DEX", 13, "LUCK");
+      if (result.success) {
+        state.gold += hasAlly("rook") ? 45 : 25;
+        playVfx("gold");
+        player.mp = Math.min(player.maxMP, player.mp + 8);
+        gainExp(10);
+        setStory(`คุณสะเดาะกล่องเก็บของนักโทษสำเร็จ
+
+ได้รับ Gold และยาฟื้น MP`, [{ text: "ออกไปยังโถงหลัก", action: () => showScene("hallway") }]);
+      } else {
+        damagePlayer(5);
+        setStory(`กับดักเข็มเงาทำงาน คุณเสีย HP 5`, [{ text: "ออกไปยังโถงหลัก", action: () => showScene("hallway") }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function goThroneRoom() {
+      setStory(`คุณขึ้นมาถึงห้องโถง แต่บัลลังก์ว่างเปล่า
+
+บนพื้นมีแผนที่ชี้ไปยังหมู่บ้าน Lunmere ป่าต้องสาป และสุสานใต้เมือง`, [
+        { text: "เดินทางไปหมู่บ้าน Lunmere", action: () => { state.chapter = 2; deepen(); showScene("village"); } },
+        { text: "ลงทางลับไปสุสานใต้เมือง", action: () => { state.chapter = 2; deepen(2); showScene("catacombs"); } }
+      ]);
+    }
+
+    function askCrystal() {
+      const result = skillCheck("CHA", 13, "WIS");
+      if (result.success) {
+        state.humanity += 10;
+        state.crystals += 1;
+        addAlly("mira");
+        setStory(`Mira มองคุณอยู่ครู่หนึ่ง ก่อนยื่นคริสตัลให้
+
+"อย่าให้ราชินีเอามันไปนะ"
+
+Mira เข้าร่วมทีม`, [{ text: "ไปยังป่าต้องสาป", action: () => { deepen(); showScene("forest"); } }]);
+      } else {
+        setStory(`Mira ไม่เชื่อใจคุณและวิ่งหนีเข้าไปในป่า
+
+คุณต้องตามเธอไป`, [{ text: "ตามเข้าไปในป่าต้องสาป", action: () => { deepen(); showScene("forest"); } }]);
+      }
+      updateUI();
+    }
+
+    function stealCrystal() {
+      state.corruption += 15;
+      state.humanity -= 10;
+      state.crystals += 1;
+      setStory(`คุณแย่งคริสตัลจาก Mira ทันที
+
+ชาวบ้านมองคุณด้วยความหวาดกลัว และเงาของคุณยาวขึ้นผิดธรรมชาติ`, [{ text: "ไปยังป่าต้องสาป", action: () => { deepen(); showScene("forest"); } }]);
+      updateUI();
+    }
+
+    function inspectChild() {
+      const result = skillCheck("INT", 12, "WIS");
+      if (result.success || player.talentKey === "cursedEye") {
+        state.humanity += 5;
+        setStory(`คุณพบว่า Mira ไม่ได้ถูกสาป
+
+เธอคือภาชนะของแสงจันทร์ดวงแรก ถ้าเธอตาย โลกจะเหลือเพียงจันทร์ดำ`, [
+          { text: "ปกป้อง Mira และขอคริสตัล", action: () => askCrystal() },
+          { text: "ยังคงแย่งคริสตัล", action: () => stealCrystal() }
+        ]);
+      } else {
+        setStory(`คุณตรวจสอบไม่พบอะไร นอกจากความเย็นของคริสตัลสีดำ`, [
+          { text: "ขอคริสตัล", action: () => askCrystal() },
+          { text: "แย่งคริสตัล", action: () => stealCrystal() }
+        ]);
+      }
+      updateUI();
+    }
+
+    function helpVillage() {
+      const result = skillCheck("END", 14, "STR");
+      if (result.success) {
+        state.humanity += 12;
+        state.gold += 20;
+        playVfx("gold");
+        gainExp(20);
+        setStory(`คุณช่วยชาวบ้านตั้งแนวป้องกันจนพวกเขาเริ่มมีความหวัง
+
+พวกเขามอบเสบียงและ Gold ให้คุณ`, [{ text: "ไปยังป่าต้องสาป", action: () => { deepen(); showScene("forest"); } }]);
+      } else {
+        damagePlayer(6);
+        setStory(`คุณทำงานหนักเกินไปและถูกเศษไม้คำสาปบาด เสีย HP 6`, [{ text: "ไปยังป่าต้องสาป", action: () => { deepen(); showScene("forest"); } }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function recruitKael() {
+      const result = skillCheck("CHA", 14, "PER");
+      if (result.success) {
+        addAlly("kael");
+        setStory(`Kael ลดธนูลง
+
+"ถ้าเจ้าตามล่าเงาจันทร์ ข้าจะไปด้วย"
+
+Kael เข้าร่วมทีม`, [
+          { text: "ร่วมกันสู้ Shadow Wolf", action: () => startCombat("Shadow Wolf", 50, 13, 9, "wolfDefeated", true) },
+          { text: "ให้ Kael นำทางสู่สุสาน", action: () => { deepen(); showScene("catacombs"); } }
+        ]);
+      } else {
+        setStory(`Kael ไม่ไว้ใจคุณ เขาหายเข้าไปในป่า`, [{ text: "ต้องสู้ Shadow Wolf เอง", action: () => startCombat("Shadow Wolf", 50, 13, 9, "wolfDefeated", true) }]);
+      }
+      updateUI();
+    }
+
+    function sneakWolf() {
+      const result = skillCheck("AGI", 15, "DEX");
+      if (result.success) {
+        state.crystals += 1;
+        gainExp(20);
+        setStory(`คุณลอบผ่าน Shadow Wolf และขโมยคริสตัลจากแท่นหินได้`, [{ text: "ไปสุสานใต้เมือง", action: () => { deepen(); showScene("catacombs"); } }]);
+      } else {
+        damagePlayer(9);
+        setStory(`คุณพลาด เหยียบกิ่งไม้ดังกรอบ
+
+Shadow Wolf กัดคุณ เสีย HP 9`, [{ text: "ต่อสู้", action: () => startCombat("Shadow Wolf", 50, 13, 9, "wolfDefeated", true) }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function deepForestPath() {
+      const result = skillCheck("PER", 16, "WIS");
+      if (result.success) {
+        deepen(2);
+        state.crystals += 1;
+        state.gold += hasAlly("rook") ? 60 : 30;
+        playVfx("gold");
+        gainExp(25);
+        setStory(`คุณพบแท่นบูชาเก่าใต้รากไม้ยักษ์
+
+ได้รับคริสตัลลับและ Gold`, [{ text: "ลงสู่สุสานใต้เมือง", action: () => showScene("catacombs") }]);
+      } else {
+        startCombat("Root Horror", 58, 14, 10, "minorDeepWin", false);
+      }
+      updateUI();
+    }
+
+    function bloodDoor() {
+      const result = skillCheck("STR", 15, "END");
+      if (result.success) {
+        state.crystals += 1;
+        gainExp(25);
+        setStory(`คุณเปิดประตูเลือดสำเร็จ
+
+ด้านในมีคริสตัลสีแดงเข้มและจารึกของกษัตริย์องค์ก่อน`, [{ text: "ไปเมืองหลวง", action: () => { state.chapter = 3; deepen(); showScene("capital"); } }]);
+      } else startCombat("Blood Warden", 62, 15, 12, "minorDeepWin", false);
+    }
+
+    function memoryDoor() {
+      const result = skillCheck("INT", 15, "WIS");
+      if (result.success) {
+        state.humanity += 10;
+        gainExp(25);
+        setStory(`คุณเห็นความทรงจำของกษัตริย์
+
+เขายอมเสียสละตัวเองเพื่อถ่วงเวลา ไม่ใช่เพราะทรยศ`, [{ text: "ไปเมืองหลวงพร้อมความจริง", action: () => { state.chapter = 3; deepen(); showScene("capital"); } }]);
+      } else {
+        state.corruption += 10;
+        setStory(`ความทรงจำของคุณถูกเงากัดกิน Corruption เพิ่มขึ้น`, [{ text: "หนีไปเมืองหลวง", action: () => { state.chapter = 3; deepen(); showScene("capital"); } }]);
+      }
+      updateUI();
+    }
+
+    function betrayalDoor() {
+      const result = skillCheck("DEX", 15, "CHA");
+      if (result.success) {
+        addAlly("rook");
+        state.gold += 40;
+        playVfx("gold");
+        setStory(`หลังประตูมีโจรชื่อ Rook ถูกขังอยู่
+
+เขายิ้มและพูดว่า "ช่วยข้า แล้วข้าจะช่วยเจ้าขโมยโลกคืนมา"
+
+Rook เข้าร่วมทีม`, [{ text: "ไปเมืองหลวง", action: () => { state.chapter = 3; deepen(); showScene("capital"); } }]);
+      } else startCombat("Mirror Traitor", 60, 14, 11, "minorDeepWin", false);
+      updateUI();
+    }
+
+    function questionQueen() {
+      const result = skillCheck("CHA", 16, "WIS");
+      if (result.success || player.talentKey === "cursedEye") {
+        setStory(`คุณจับคำโกหกของราชินีได้
+
+ราชินีไม่ได้ต้องการปิดผนึกประตู แต่นางต้องการเป็นร่างใหม่ของเทพเงาจันทร์`, [
+          { text: "โจมตีราชินี", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) },
+          { text: "แกล้งเชื่อและหาจังหวะชิงตราประตู [AGI/DEX]", action: () => trickQueen() }
+        ]);
+      } else {
+        setStory(`ราชินีพูดด้วยน้ำเสียงอ่อนโยนจนคุณลังเล
+
+คุณยังไม่รู้ว่าเธอโกหกหรือไม่`, [
+          { text: "มอบคริสตัล", action: () => trustQueen() },
+          { text: "ไม่ไว้ใจและโจมตี", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) }
+        ]);
+      }
+      updateUI();
+    }
+
+    function rescueSera() {
+      const result = skillCheck("INT", 15, "DEX");
+      if (result.success) {
+        addAlly("sera");
+        state.humanity += 5;
+        setStory(`คุณคลายโซ่เวทได้สำเร็จ
+
+Sera เข้าร่วมทีม และกระซิบว่า "ราชินีกลัวคริสตัลครบสี่ชิ้น"`, [
+          { text: "ต่อสู้กับราชินี", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) },
+          { text: "ชิงตราประตู", action: () => trickQueen() }
+        ]);
+      } else {
+        damagePlayer(10);
+        setStory(`โซ่เวทสะท้อนพลังกลับใส่คุณ เสีย HP 10`, [
+          { text: "ต่อสู้กับราชินี", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) }
+        ]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function trustQueen() {
+      state.corruption += 25;
+      setStory(`คุณมอบคริสตัลให้ราชินี
+
+เธอยิ้ม ก่อนคริสตัลทั้งหมดจะละลายเข้าไปในร่างของเธอ
+
+ประตูเงาจันทร์เปิดออกเร็วกว่าที่ควร`, [{ text: "ตามเข้าไปในประตู", action: () => { deepen(); showScene("finalGate"); } }]);
+      updateUI();
+    }
+
+    function trickQueen() {
+      const result = skillCheck("AGI", 15, "DEX");
+      if (result.success) {
+        state.crystals += 1;
+        gainExp(25);
+        setStory(`คุณหลอกให้ราชินีเผยตราประตู แล้วชิงมันมาได้
+
+คุณได้คริสตัลชิ้นสุดท้าย`, [{ text: "เปิดทางไปประตูสุดท้าย", action: () => { deepen(); showScene("finalGate"); } }]);
+      } else {
+        damagePlayer(12);
+        state.corruption += 8;
+        setStory(`ราชินีรู้ทันและใช้เวทเงาโจมตีคุณ
+
+เสีย HP 12`, [{ text: "ต่อสู้กับราชินี", action: () => startCombat("Queen Lucaria", 78, 16, 13, "queenDefeated", true) }]);
+      }
+      updateUI(); checkDeath();
+    }
+
+    function startCombat(name, hp, defense, damage, winFlag, boss = false) {
+      const depthBonus = Math.max(0, state.depth - 1);
+      enemy = {
+        name,
+        hp: hp + depthBonus * 6,
+        maxHP: hp + depthBonus * 6,
+        defense: defense + Math.floor(depthBonus / 2),
+        damage: damage + Math.floor(depthBonus / 2),
+        winFlag,
+        boss
+      };
+      if (hasAlly("sera")) {
+        enemy.defense = Math.max(8, enemy.defense - 2);
+        log("Sera ใช้ Arcane Break ลด Defense ศัตรู");
+      }
+      updateEnemyBox();
+      setStory(`${name} ปรากฏตัวต่อหน้าคุณ
+
+การต่อสู้เริ่มขึ้น!`, combatChoices());
+    }
+
+    function combatChoices() {
+      return [
+        { text: `โจมตีปกติ`, action: () => playerAttack("normal") },
+        { text: `ใช้สกิล: ${player.skill}`, action: () => playerAttack("skill") },
+        { text: "สั่งทีมโจมตีพร้อมกัน", action: () => teamAttack() },
+        { text: "ป้องกัน", action: () => defend() },
+        { text: "ใช้เวท/สมาธิฟื้นฟู", action: () => recover() }
+      ];
+    }
+
+    function playerAttack(type) {
+      if (!enemy) return;
+      let stat = "STR";
+      let cost = 0;
+      let bonus = 0;
+      if (type === "skill") {
+        cost = 8;
+        if (player.mp < cost) { log("MP ไม่พอใช้สกิล"); return; }
+        player.mp -= cost;
+        bonus = 6;
+        if (player.className === "นักเวท" || player.className === "นักบวช") stat = "INT";
+        if (player.className === "นักฆ่า" || player.className === "นักล่า") stat = "AGI";
+        if (player.className === "Hexblade") { stat = "INT"; state.corruption += 2; }
+      }
+      const result = skillCheck(stat, enemy.defense, type === "skill" ? "DEX" : null);
+      if (result.success) {
+        let dmg = player.stats[stat] + bonus + Math.floor(Math.random() * 8) + 4;
+        if (enemy.boss && hasAlly("kael")) dmg += 4;
+        if (result.roll === 20) dmg *= 2;
+        if (player.talentKey === "bloodPact" && player.hp <= player.maxHP * 0.3) dmg += 5;
+        enemy.hp -= dmg;
+        playSfx("hit");
+        log(`คุณโจมตี ${enemy.name} สร้างดาเมจ ${dmg}`);
+      } else log(`คุณโจมตีพลาด`);
+      if (enemy.hp <= 0) { winCombat(); return; }
+      enemyTurn(); updateEnemyBox(); updateUI(); checkDeath();
+    }
+
+    function teamAttack() {
+      if (!enemy) return;
+      if (!state.allies.length) { log("คุณยังไม่มีเพื่อนร่วมทีม"); return; }
+      const roll = d20();
+      const power = partyPower();
+      const total = roll + Math.floor(power / 3);
+      log(`Team Attack: D20 ${roll} + PartyPower/3 ${Math.floor(power / 3)} = ${total}`);
+      if (total >= enemy.defense + 3) {
+        let dmg = Math.floor(power * 0.75) + Math.floor(Math.random() * 8);
+        enemy.hp -= dmg;
+        playSfx("hit");
+        log(`ทีมโจมตีพร้อมกัน ทำดาเมจ ${dmg}`);
+      } else {
+        log("ทีมโจมตีไม่ประสานกันพอ");
+      }
+      if (enemy.hp <= 0) { winCombat(); return; }
+      enemyTurn(1.1); updateEnemyBox(); updateUI(); checkDeath();
+    }
+
+    function enemyTurn(multiplier = 1) {
+      const roll = Math.floor(Math.random() * 20) + 1;
+      let dmg = enemy.damage + Math.floor(Math.random() * 5);
+      if (roll >= 15) dmg += 4;
+      dmg = Math.floor(dmg * multiplier);
+      if (player.talentKey === "ironWill" && Math.random() < 0.2) { log(`Iron Will ลดดาเมจจากศัตรู`); dmg = Math.max(1, dmg - 5); }
+      if (hasAlly("thorne") && recruitableAllies.thorne.hp > 0 && Math.random() < 0.35) {
+        const taken = Math.max(1, dmg - recruitableAllies.thorne.defense);
+        recruitableAllies.thorne.hp -= taken;
+        log(`Thorne ใช้ Guard รับดาเมจแทนคุณ ${taken}`);
+        return;
+      }
+      damagePlayer(dmg);
+      log(`${enemy.name} โจมตีคุณ ดาเมจ ${dmg}`);
+    }
+
+    function defend() {
+      log("คุณตั้งรับ ลดดาเมจรอบนี้");
+      enemyTurn(0.45); updateUI(); updateEnemyBox(); checkDeath();
+    }
+
+    function recover() {
+      const heal = 8 + player.stats.VIT + Math.floor(player.stats.WIS / 2);
+      const mana = 8 + player.stats.INT;
+      player.hp = Math.min(player.maxHP, player.hp + heal);
+      player.mp = Math.min(player.maxMP, player.mp + mana);
+      playSfx("heal");
+      log(`คุณฟื้น HP ${heal} และ MP ${mana}`);
+      enemyTurn(0.75); updateUI(); updateEnemyBox(); checkDeath();
+    }
+
+    function winCombat() {
+      log(`คุณชนะ ${enemy.name}`);
+      const flag = enemy.winFlag;
+      const boss = enemy.boss;
+      enemy = null;
+      document.getElementById("enemyBox").classList.add("hidden");
+      gainExp(boss ? 45 : 25);
+      state.gold += hasAlly("rook") ? 35 : 18;
+      playVfx("gold");
+      afterCombatHeal();
+      if (flag === "wolfDefeated") {
+        state.crystals += 1;
+        state.humanity += 4;
+        setStory(`Shadow Wolf สลายกลายเป็นละอองเงา
+
+คุณได้รับคริสตัลอีกชิ้น`, [{ text: "ลงสู่สุสานใต้เมือง", action: () => { deepen(); showScene("catacombs"); } }]);
+      } else if (flag === "queenDefeated") {
+        state.crystals += 1;
+        state.humanity += 8;
+        setStory(`ราชินีล้มลง แต่ก่อนสิ้นใจ เธอหัวเราะเบาๆ
+
+"มันตื่นแล้ว... ต่อให้ไม่มีข้า..."
+
+คุณได้รับคริสตัลชิ้นสุดท้าย`, [{ text: "เข้าสู่ประตูเงาจันทร์", action: () => { deepen(); showScene("finalGate"); } }]);
+      } else if (flag === "finalDefeated") ending();
+      else if (flag === "minorDeepWin") {
+        state.crystals += Math.random() < 0.35 ? 1 : 0;
+        setStory(`คุณเอาชนะสิ่งที่เฝ้าความลึกไว้ได้
+
+ทางข้างหน้าเปิดออก`, [{ text: "ไปเมืองหลวง", action: () => { state.chapter = 3; deepen(); showScene("capital"); } }]);
+      }
+      updateUI();
+    }
+
+    function updateEnemyBox() {
+      const box = document.getElementById("enemyBox");
+      if (!enemy) { box.classList.add("hidden"); return; }
+      box.classList.remove("hidden");
+      box.innerHTML = `<h3>${enemy.name}</h3>
+        <div class="small">HP: ${Math.max(0, enemy.hp)}/${enemy.maxHP} | Defense: ${enemy.defense} | Damage: ${enemy.damage} | ${enemy.boss ? "Boss" : "Enemy"}</div>
+        <div class="barWrap"><div class="bar"><div class="barFill" style="width:${Math.max(0, enemy.hp / enemy.maxHP * 100)}%"></div></div></div>`;
+    }
+
+    function sealWithHumanity() {
+      if (state.humanity >= 75 && state.crystals >= 3) {
+        setEnding("Light Restored", `คุณยกคริสตัลขึ้นและใช้แสงจาก Humanity ปิดผนึกประตูเงาจันทร์
+
+โลกยังคงมีแผลเป็น แต่รุ่งอรุณกลับมาอีกครั้ง
+
+คุณและทีมถูกจารึกเป็นวีรบุรุษแห่งเรวาเนียร์`);
+      } else {
+        damagePlayer(25);
+        state.corruption += 15;
+        setStory(`คุณพยายามใช้ Humanity ปิดผนึก แต่แสงยังไม่พอ
+
+พลังสะท้อนกลับใส่คุณ เสีย HP 25`, [{ text: "ต้องสู้เท่านั้น", action: () => startCombat("Moonshade God", 120, 18, 17, "finalDefeated", true) }]);
+        updateUI(); checkDeath();
+      }
+    }
+
+    function claimDarkPower() {
+      if (state.corruption >= 60) {
+        playSfx("dark");
+        setEnding("Void King", `คุณไม่ปิดผนึกเทพเงาจันทร์
+
+คุณกลืนกินมันแทน
+
+บัลลังก์เงาจันทร์กลายเป็นของคุณ และโลกทั้งใบก้มลงต่อราชาคนใหม่`);
+      } else {
+        state.corruption += 25;
+        damagePlayer(18);
+        setStory(`คุณพยายามยึดพลังเงา แต่พลังนั้นยังมากเกินไป
+
+คุณเสีย HP 18 และ Corruption เพิ่มขึ้น`, [{ text: "เข้าสู้กับเทพเงาจันทร์", action: () => startCombat("Moonshade God", 120, 18, 17, "finalDefeated", true) }]);
+        updateUI(); checkDeath();
+      }
+    }
+
+    function teamRitual() {
+      const teamScore = partyPower() + state.crystals * 8 + Math.floor(state.humanity / 5) - Math.floor(state.corruption / 8);
+      log(`Team Ritual Score = ${teamScore}`);
+      if (teamScore >= 60 && state.allies.length >= 3) {
+        setEnding("United Dawn", `คุณไม่ได้ชนะด้วยพลังของตัวเองคนเดียว
+
+Thorne ปกป้องวงเวท Mira เรียกแสงจันทร์ดวงแรก Kael ยิงตรึงเงา Sera ทำลายผนึก และ Rook ขโมยหัวใจแห่งบัลลังก์
+
+ประตูเงาจันทร์ปิดลงโดยไม่มีใครต้องสละชีวิต`);
+      } else {
+        setStory(`ทีมของคุณพยายามประกอบพิธี แต่พลังยังไม่พอ
+
+เทพเงาจันทร์ฉีกวงเวทออก`, [{ text: "เข้าสู้กับ Moonshade God", action: () => startCombat("Moonshade God", 120, 18, 17, "finalDefeated", true) }]);
+      }
+    }
+
+    function ending() {
+      if (state.allies.length >= 4 && state.humanity >= 65) {
+        setEnding("United Dawn", `หลังเทพเงาจันทร์พ่ายแพ้ ทีมของคุณรวมพลังกันปิดผนึกประตู
+
+ไม่มีใครถูกลืม ไม่มีใครถูกทิ้งไว้ในความมืด
+
+เรวาเนียร์เริ่มยุคใหม่ภายใต้แสงของคนธรรมดาที่เลือกยืนหยัดร่วมกัน`);
+      } else if (state.corruption >= 80) {
+        setEnding("Void King", `หลังเทพเงาจันทร์พ่ายแพ้ คุณกลับไม่ทำลายบัลลังก์
+
+คุณนั่งลงบนมัน และรับเสียงกระซิบทั้งหมดเป็นของตัวเอง
+
+โลกไม่ได้รอดพ้นจากความมืด เพียงแค่เปลี่ยนเจ้าของ`);
+      } else if (state.humanity >= 70 && state.crystals >= 4) {
+        setEnding("Light Restored", `คริสตัลทั้งสี่ลอยขึ้นเหนือบัลลังก์
+
+แสงจันทร์ดวงแรกกลับมา โลกได้รับการฟื้นฟู
+
+คุณกลายเป็นตำนานที่ผู้คนเล่าขาน`);
+      } else if (Math.abs(state.humanity - state.corruption) <= 20) {
+        setEnding("Broken Savior", `คุณชนะ แต่ไม่เหลือพลังพอจะกลับไป
+
+คุณปิดประตูจากด้านใน และกลายเป็นผู้เฝ้าประตูเงาจันทร์ตลอดกาล`);
+      } else {
+        setEnding("Fallen Realm", `เทพเงาจันทร์ถูกทำลาย แต่คริสตัลไม่พอจะซ่อมโลก
+
+เรวาเนียร์รอดชีวิต แต่จะไม่มีวันกลับไปเหมือนเดิม`);
+      }
+    }
+
+    function setEnding(title, text) {
+      enemy = null;
+      document.getElementById("enemyBox").classList.add("hidden");
+      playSfx(title.includes("Void") || title.includes("Death") ? "dark" : "ending");
+      setStory(`ฉากจบ: ${title}
+
+${text}`, [{ text: "เล่นใหม่", action: () => restartGame() }]);
+    }
+
+    function hasAlly(id) { return state.allies.includes(id); }
+
+    function damagePlayer(amount) {
+      if (player.talentKey === "bloodPact" && player.hp <= player.maxHP * 0.3) amount += 2;
+      player.hp -= Math.max(0, amount);
+      if (amount > 0) playSfx("damage");
+    }
+
+    function afterCombatHeal() {
+      if (hasAlly("mira") && Math.random() < 0.65) {
+        const heal = 10 + Math.floor(player.stats.WIS / 2);
+        player.hp = Math.min(player.maxHP, player.hp + heal);
+        state.allies.forEach(id => {
+          const a = recruitableAllies[id];
+          a.hp = Math.min(a.maxHP, a.hp + Math.floor(heal / 2));
+        });
+        playSfx("heal");
+        log(`Mira ใช้ Moon Heal ฟื้นทีม`);
+      }
+    }
+
+    function restParty() {
+      if (!player) return;
+      if (state.gold < 10) { log("Gold ไม่พอสำหรับพักทีม ต้องใช้ 10 Gold"); return; }
+      state.gold -= 10;
+      player.hp = Math.min(player.maxHP, player.hp + Math.floor(player.maxHP * 0.45));
+      player.mp = Math.min(player.maxMP, player.mp + Math.floor(player.maxMP * 0.5));
+      state.allies.forEach(id => recruitableAllies[id].hp = recruitableAllies[id].maxHP);
+      playSfx("heal");
+      log("ทีมพักและฟื้นฟูแล้ว");
+      updateUI();
+    }
+
+    function checkDeath() {
+      if (player && player.hp <= 0) {
+        player.hp = 0;
+        updateUI();
+        setEnding("Death Ending", `คุณล้มลงท่ามกลางแสงจันทร์สีดำ
+
+เงาของคุณลุกขึ้นแทน และเดินต่อไปยังบัลลังก์โดยไม่มีวิญญาณ`);
+      }
+    }
+
+    function rollFreeD20() {
+      if (!player) return;
+      playSfx("roll");
+      const roll = d20();
+      log(`ทอย D20 ฟรี: ${roll}`);
+    }
+
+    function log(message) {
+      const box = document.getElementById("logBox");
+      if (!box) return;
+      const time = new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+      box.innerHTML = `<div>[${time}] ${message}</div>` + box.innerHTML;
+    }
+
+    function restartGame(showApp = true) {
+      player = null;
+      enemy = null;
+      state = newGameState();
+      Object.keys(recruitableAllies).forEach(id => {
+        recruitableAllies[id].hp = recruitableAllies[id].maxHP;
+        recruitableAllies[id].recruited = false;
+      });
+      if (showApp) {
+        document.getElementById("mainMenu").classList.add("hidden");
+        document.getElementById("introScreen").classList.add("hidden");
+        document.getElementById("appRoot").classList.remove("hidden");
+      }
+      currentSceneKey = "cell";
+      document.getElementById("createPanel").classList.remove("hidden");
+      document.getElementById("characterPanel").classList.add("hidden");
+      document.getElementById("enemyBox").classList.add("hidden");
+      document.getElementById("choices").innerHTML = "";
+      document.getElementById("story").textContent = "สร้างตัวละครก่อนเพื่อเริ่มเกม\n\nคุณจะตื่นขึ้นมาในคุกใต้ปราสาท ในคืนที่ดวงจันทร์สีดำกลับมาบนฟ้าอีกครั้ง...";
+      document.getElementById("logBox").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
